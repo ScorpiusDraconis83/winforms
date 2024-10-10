@@ -64,7 +64,7 @@ internal class AssemblyNamesTypeResolutionService : ITypeResolutionService
     {
 #pragma warning disable SYSLIB0044 // Type or member is obsolete. Ref https://github.com/dotnet/winforms/issues/7308
         return name.CodeBase ?? string.Empty;
-#pragma warning restore SYSLIB0044 // Type or member is obsolete
+#pragma warning restore SYSLIB0044
     }
 
     public Type? GetType(string name) => GetType(name, true);
@@ -81,7 +81,7 @@ internal class AssemblyNamesTypeResolutionService : ITypeResolutionService
         }
 
         // Missed in cache, try to resolve the type from the reference assemblies.
-        if (name.IndexOf(',') != -1)
+        if (name.Contains(','))
         {
             result = Type.GetType(name, false, ignoreCase);
         }

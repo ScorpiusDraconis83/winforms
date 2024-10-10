@@ -3,12 +3,16 @@
     <AssemblyName>System.Windows.Forms.Primitives.TestUtilities</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>System</RootNamespace>
+    <!--
+      SYSLIB5005: System.Formats.Nrbf is experimental
+    -->
+    <NoWarn>$(NoWarn);SYSLIB5005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
-    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsPackageVersion)" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="System.Collections.Concurrent" />
+    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
   </ItemGroup>
 
   <ItemGroup>

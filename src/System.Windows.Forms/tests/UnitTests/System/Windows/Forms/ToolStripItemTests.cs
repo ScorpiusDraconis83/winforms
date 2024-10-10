@@ -282,7 +282,6 @@ public class ToolStripItemTests
 
     public static IEnumerable<object[]> AccessibilityObject_Get_TestData()
     {
-        yield return new object[] { null };
         yield return new object[] { new AccessibleObject() };
         yield return new object[] { new SubToolStripItem.ToolStripItemAccessibleObject(new SubToolStripItem()) };
     }
@@ -386,6 +385,16 @@ public class ToolStripItemTests
         // Set same.
         item.Alignment = value;
         Assert.Equal(value, item.Alignment);
+    }
+
+    [WinFormsFact]
+    public void ToolStripItem_Renderer_GetReturnsExpected()
+    {
+        using ToolStrip toolStrip = new();
+        using SubToolStripItem item = new();
+        toolStrip.Items.Add(item);
+
+        Assert.Same(toolStrip.Renderer, item.Renderer);
     }
 
     [WinFormsTheory]
@@ -15441,7 +15450,7 @@ public class ToolStripItemTests
         Assert.Equal(1, callBackInvokedCount);
     }
 
-    private class MyMenuStrip: MenuStrip
+    private class MyMenuStrip : MenuStrip
     {
         public void MoveMouse(MouseEventArgs mea)
         {
@@ -15617,7 +15626,7 @@ public class ToolStripItemTests
         public new void SetVisibleCore(bool visible) => base.SetVisibleCore(visible);
     }
 
-    private class  ToolStripWithDisconnectCount : ToolStrip
+    private class ToolStripWithDisconnectCount : ToolStrip
     {
         public ToolStripWithDisconnectCount() : base() { }
 
@@ -15638,7 +15647,7 @@ public class ToolStripItemTests
         public bool IsAccessibleObjectCleared()
         {
             var key = this.TestAccessor().Dynamic.s_accessibilityProperty;
-            return Properties.GetObject(key) is not AccessibleObject;
+            return !Properties.ContainsKey(key);
         }
     }
 }

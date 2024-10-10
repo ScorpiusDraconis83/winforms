@@ -396,13 +396,8 @@ internal partial class StyleCollectionEditor
 
             // absoluteNumericUpDown
             resources.ApplyResources(_absoluteNumericUpDown, "absoluteNumericUpDown");
-            _absoluteNumericUpDown.Maximum = new decimal(new int[]
-            {
-                99999,
-                0,
-                0,
-                0
-            });
+            _absoluteNumericUpDown.Maximum = new decimal(99999u);
+
             _absoluteNumericUpDown.Name = "absoluteNumericUpDown";
             _absoluteNumericUpDown.Margin = new Padding(_scaledUpDownLeftMargin, _scaledUpDownTopMargin, 0, 0);
             _absoluteNumericUpDown.AutoScaleMode = AutoScaleMode.Font;
@@ -435,13 +430,7 @@ internal partial class StyleCollectionEditor
             // percentNumericUpDown
             resources.ApplyResources(_percentNumericUpDown, "percentNumericUpDown");
             _percentNumericUpDown.DecimalPlaces = 2;
-            _percentNumericUpDown.Maximum = new decimal(new int[]
-            {
-                9999,
-                0,
-                0,
-                0
-            });
+            _percentNumericUpDown.Maximum = new decimal(9999u);
             _percentNumericUpDown.Name = "percentNumericUpDown";
             _percentNumericUpDown.Margin = new Padding(_scaledUpDownLeftMargin, _scaledUpDownTopMargin, 0, 0);
             _percentNumericUpDown.AutoScaleMode = AutoScaleMode.Font;
@@ -746,10 +735,10 @@ internal partial class StyleCollectionEditor
             // Unhook the event while we reset.
             // If we didn't the setting the value would cause OnValueChanged below to get called.
             // If we then go ahead and update the listView, which we don't want in the reset case.
-            _absoluteNumericUpDown.ValueChanged -= new EventHandler(OnValueChanged);
+            _absoluteNumericUpDown.ValueChanged -= OnValueChanged;
             _absoluteNumericUpDown.Enabled = false;
             _absoluteNumericUpDown.Value = DesignerUtils.s_minimumStyleSize;
-            _absoluteNumericUpDown.ValueChanged += new EventHandler(OnValueChanged);
+            _absoluteNumericUpDown.ValueChanged += OnValueChanged;
         }
 
         private void ResetPercent()
@@ -757,10 +746,10 @@ internal partial class StyleCollectionEditor
             // Unhook the event while we reset.
             // If we didn't the setting the value would cause OnValueChanged below to get called.
             // If we then go ahead and update the listView, which we don't want in the reset case.
-            _percentNumericUpDown.ValueChanged -= new EventHandler(OnValueChanged);
+            _percentNumericUpDown.ValueChanged -= OnValueChanged;
             _percentNumericUpDown.Enabled = false;
             _percentNumericUpDown.Value = DesignerUtils.s_minimumStylePercent;
-            _percentNumericUpDown.ValueChanged += new EventHandler(OnValueChanged);
+            _percentNumericUpDown.ValueChanged += OnValueChanged;
         }
 
         private void UpdateGroupBox(SizeType type, float value)

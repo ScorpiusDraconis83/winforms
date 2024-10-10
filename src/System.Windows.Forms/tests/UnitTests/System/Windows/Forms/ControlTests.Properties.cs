@@ -52,28 +52,42 @@ public partial class ControlTests
         Assert.Same(control, accessibleObject.Owner);
     }
 
-    public static IEnumerable<object[]> AccessibilityObject_CustomCreateAccessibilityInstance_TestData()
+    public static TheoryData<AccessibleObject, AccessibleObject> AccessibilityObject_CustomCreateAccessibilityInstance_TestData()
     {
-        yield return new object[] { null, null };
-
         AccessibleObject accessibleObject = new();
-        yield return new object[] { accessibleObject, accessibleObject };
-
-        var controlAccessibleObject = new Control.ControlAccessibleObject(new Control());
-        yield return new object[] { controlAccessibleObject, controlAccessibleObject };
+        return new TheoryData<AccessibleObject, AccessibleObject>
+        {
+            { accessibleObject, accessibleObject }
+        };
     }
 
     [WinFormsTheory]
     [MemberData(nameof(AccessibilityObject_CustomCreateAccessibilityInstance_TestData))]
     public void Control_AccessibilityObject_GetCustomCreateAccessibilityInstance_ReturnsExpected(AccessibleObject result, AccessibleObject expected)
     {
+        using CustomCreateAccessibilityInstanceControl control = new()
+        {
+            CreateAccessibilityResult = result
+        };
+
+        Assert.Same(expected, control.AccessibilityObject);
+        Assert.Same(control.AccessibilityObject, control.AccessibilityObject);
+        Assert.False(control.IsHandleCreated);
+    }
+
+    [WinFormsFact]
+    public void Control_AccessibilityObject_GetCustomCreateAccessibilityInstance_WithRealControlAccessibleObject_ReturnsExpected()
+    {
+        using Control control1 = new();
+        var controlAccessibleObject = new Control.ControlAccessibleObject(control1);
+
         using (new NoAssertContext())
         {
             using CustomCreateAccessibilityInstanceControl control = new()
             {
-                CreateAccessibilityResult = result
+                CreateAccessibilityResult = controlAccessibleObject
             };
-            Assert.Same(expected, control.AccessibilityObject);
+            Assert.Same(controlAccessibleObject, control.AccessibilityObject);
             Assert.Same(control.AccessibilityObject, control.AccessibilityObject);
             Assert.False(control.IsHandleCreated);
         }
@@ -10506,7 +10520,7 @@ public partial class ControlTests
     }
 
     [WinFormsTheory]
-    [CommonMemberData(typeof(ControlTests), nameof(ControlTests.Get_Control_ShowFocusCues_GetWithHandleMessageSent_ReturnsExpected))]
+    [CommonMemberData(typeof(ControlTests), nameof(Get_Control_ShowFocusCues_GetWithHandleMessageSent_ReturnsExpected))]
     public void Control_ShowFocusCues_GetWithHandleMessageSent_ReturnsExpected(int wParam, bool expected)
     {
         using SubControl control = new();
@@ -10565,7 +10579,7 @@ public partial class ControlTests
     }
 
     [WinFormsTheory]
-    [CommonMemberData(typeof(ControlTests), nameof(ControlTests.Get_Control_ShowKeyboardCues_GetWithHandleMessageSent_ReturnsExpected))]
+    [CommonMemberData(typeof(ControlTests), nameof(Get_Control_ShowKeyboardCues_GetWithHandleMessageSent_ReturnsExpected))]
     public void Control_ShowKeyboardCues_GetWithHandleMessageSent_ReturnsExpected(int wParam, bool expected)
     {
         using SubControl control = new();

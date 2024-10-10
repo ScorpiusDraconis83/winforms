@@ -1347,7 +1347,7 @@ public class AxHostTests
     [WinFormsFact]
     public void AxHost_EndInit_InvokeWithParent_CreatesControl()
     {
-        Control parent = new();
+        using Control parent = new();
         using SubAxHost control = new(WebBrowserClsidString)
         {
             Parent = parent
@@ -3071,6 +3071,18 @@ public class AxHostTests
         Assert.Equal(0, invalidatedCallCount);
         Assert.Equal(0, styleChangedCallCount);
         Assert.Equal(0, createdCallCount);
+    }
+
+    [WinFormsFact]
+    public unsafe void AxHost_Ocx_Dispose_Success()
+    {
+        SubAxHost control = new(WebBrowserClsidString);
+        control.CreateControl();
+        using var ocx = ComHelpers.GetComScope<IUnknown>(control.GetOcx());
+
+        control.Dispose();
+        ocx.Value->AddRef();
+        (ocx.Value->Release() - 1).Should().Be(0);
     }
 
     private class SubComponentEditor : ComponentEditor

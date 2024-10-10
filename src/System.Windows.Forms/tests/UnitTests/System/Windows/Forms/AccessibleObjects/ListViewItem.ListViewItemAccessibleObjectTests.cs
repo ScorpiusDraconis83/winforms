@@ -562,23 +562,23 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
 
         listView.VirtualListSize = 1;
 
-        ListViewItem listItem1 = new(new string[]
-        {
+        ListViewItem listItem1 = new(
+        [
             "Test A",
             "Alpha"
-        }, -1);
+        ], -1);
 
-        ListViewItem listItem2 = new(new string[]
-        {
+        ListViewItem listItem2 = new(
+        [
             "Test B",
             "Beta"
-        }, -1);
+        ], -1);
 
-        ListViewItem listItem3 = new(new string[]
-        {
+        ListViewItem listItem3 = new(
+        [
             "Test C",
             "Gamma"
-        }, -1);
+        ], -1);
 
         listView.RetrieveVirtualItem += (s, e) =>
         {
@@ -652,7 +652,7 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
             Assert.NotEqual(IntPtr.Zero, listView.Handle);
         }
 
-        ListViewItem listItem1 = new(new string[] { "Test A", "Alpha" }, -1);
+        ListViewItem listItem1 = new(["Test A", "Alpha"], -1);
         listView.Items.Add(listItem1);
         listView.Items[0].Selected = selected;
         AccessibleObject accessibleObject = listView.Items[0].AccessibilityObject;
@@ -696,7 +696,7 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
             VirtualListSize = 1
         };
 
-        ListViewItem listItem1 = new(new string[] { "Test A", "Alpha" }, -1);
+        ListViewItem listItem1 = new(["Test A", "Alpha"], -1);
 
         listView.RetrieveVirtualItem += (s, e) =>
         {
@@ -1194,10 +1194,10 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
             VirtualListSize = 4
         };
 
-        ListViewItem listItem1 = new(new string[] { "Test Item 1", "Item A" }, -1);
+        ListViewItem listItem1 = new(["Test Item 1", "Item A"], -1);
         ListViewItem listItem2 = new("Group item 2");
         ListViewItem listItem3 = new("Item 3");
-        ListViewItem listItem4 = new(new string[] { "Test Item 4", "Item B", "Item C", "Item D" }, -1);
+        ListViewItem listItem4 = new(["Test Item 4", "Item B", "Item C", "Item D"], -1);
 
         if (!virtualMode && groupsEnabled)
         {
@@ -1475,7 +1475,8 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
         Assert.Null(accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_NextSibling));
         Assert.Equal(accessibleObject2, accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_PreviousSibling));
 
-        // Since "List" mode does not support ListViewGroups, adding a ListViewGroup should not affect the operation of availability objects
+        // Since "List" mode does not support ListViewGroups, adding a ListViewGroup should not affect the operation
+        // of availability objects
         listView.Groups.Add(new ListViewGroup());
         listView.Items[1].Group = listView.Groups[0];
 
@@ -1491,7 +1492,8 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
         Assert.Null(accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_NextSibling));
         Assert.Equal(accessibleObject2, accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_PreviousSibling));
 
-        // Since "List" mode does not support ListViewGroups, updating a ListViewGroup should not affect the operation of availability objects
+        // Since "List" mode does not support ListViewGroups, updating a ListViewGroup should not affect the operation
+        // of availability objects
         listView.Groups[0].Items.Insert(0, listView.Items[0]);
 
         Assert.Equal(listView.AccessibilityObject, accessibleObject1.FragmentNavigate(NavigateDirection.NavigateDirection_Parent));
@@ -1506,7 +1508,8 @@ public class ListViewItem_ListViewItemAccessibleObjectTests
         Assert.Null(accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_NextSibling));
         Assert.Equal(accessibleObject2, accessibleObject3.FragmentNavigate(NavigateDirection.NavigateDirection_PreviousSibling));
 
-        // Since "List" mode does not support ListViewGroups, removing a ListViewGroup should not affect the operation of availability objects
+        // Since "List" mode does not support ListViewGroups, removing a ListViewGroup should not affect the operation
+        // of availability objects
         listView.Groups.RemoveAt(0);
 
         Assert.Equal(listView.AccessibilityObject, accessibleObject1.FragmentNavigate(NavigateDirection.NavigateDirection_Parent));

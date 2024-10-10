@@ -15,7 +15,7 @@ namespace System.Windows.Forms;
 public static class Clipboard
 {
     /// <summary>
-    ///  Places nonpersistent data on the system <see cref="Clipboard"/>.
+    ///  Places non-persistent data on the system <see cref="Clipboard"/>.
     /// </summary>
     public static void SetDataObject(object data) => SetDataObject(data, copy: false);
 
@@ -81,7 +81,7 @@ public static class Clipboard
         if (Application.OleRequired() != ApartmentState.STA)
         {
             // Only throw if a message loop was started. This makes the case of trying to query the clipboard from the
-            // finalizer or non-ui MTA thread silently fail, instead of making the app die.
+            // finalizer or non-ui MTA thread silently fail, instead of making the application die.
             return Application.MessageLoop ? throw new ThreadStateException(SR.ThreadMustBeSTA) : null;
         }
 
@@ -151,7 +151,27 @@ public static class Clipboard
     /// <summary>
     ///  Removes all data from the Clipboard.
     /// </summary>
-    public static void Clear() => SetDataObject(new DataObject());
+    public static unsafe void Clear()
+    {
+        if (Application.OleRequired() != ApartmentState.STA)
+        {
+            throw new ThreadStateException(SR.ThreadMustBeSTA);
+        }
+
+        HRESULT hr;
+        int retry = 10;
+        while ((hr = PInvoke.OleSetClipboard(null)).Failed)
+        {
+            if (--retry < 0)
+            {
+#pragma warning disable CA2201 // Do not raise reserved exception types
+                throw new ExternalException(SR.ClipboardOperationFailed, (int)hr);
+#pragma warning restore CA2201
+            }
+
+            Thread.Sleep(millisecondsTimeout: 100);
+        }
+    }
 
     /// <summary>
     ///  Indicates whether there is data on the Clipboard in the <see cref="DataFormats.WaveAudio"/> format.
@@ -166,7 +186,7 @@ public static class Clipboard
         !string.IsNullOrWhiteSpace(format) && ContainsData(format, autoConvert: false);
 
     private static bool ContainsData(string format, bool autoConvert) =>
-        GetDataObject() is { } dataObject && dataObject.GetDataPresent(format, autoConvert: autoConvert);
+        GetDataObject() is IDataObject dataObject && dataObject.GetDataPresent(format, autoConvert: autoConvert);
 
     /// <summary>
     ///  Indicates whether there is data on the Clipboard that is in the <see cref="DataFormats.FileDrop"/> format
@@ -203,11 +223,14 @@ public static class Clipboard
     /// <summary>
     ///  Retrieves data from the <see cref="Clipboard"/> in the specified format.
     /// </summary>
+    /// <exception cref="ThreadStateException">
+    ///  The current thread is not in single-threaded apartment (STA) mode.
+    /// </exception>
     public static object? GetData(string format) =>
         string.IsNullOrWhiteSpace(format) ? null : GetData(format, autoConvert: false);
 
     private static object? GetData(string format, bool autoConvert) =>
-        GetDataObject() is { } dataObject ? dataObject.GetData(format, autoConvert) : null;
+        GetDataObject() is IDataObject dataObject ? dataObject.GetData(format, autoConvert) : null;
 
     /// <summary>
     ///  Retrieves a collection of file names from the <see cref="Clipboard"/>.
@@ -288,7 +311,7 @@ public static class Clipboard
             // These are the only error states for Path.GetFullPath
             if (string.IsNullOrEmpty(path) || path.Contains('\0'))
             {
-                throw new ArgumentException(string.Format(SR.Clipboard_InvalidPath, path, "filePaths"));
+                throw new ArgumentException(string.Format(SR.Clipboard_InvalidPath, path, nameof(filePaths)));
             }
         }
 

@@ -227,7 +227,7 @@ dotnet_diagnostic.CA2241.severity = error
 # CA2245: Do not assign a property to itself
 dotnet_diagnostic.CA2245.severity = error
 
-# CA2248: Provide correct enumm argument to Enum.HasFlag
+# CA2248: Provide correct enum argument to Enum.HasFlag
 dotnet_diagnostic.CA2248.severity = error
 
 # CA2249: Consider using String.Contains instead of String.IndexOf
@@ -413,8 +413,10 @@ dotnet_diagnostic.IDE0002.severity = error
 # IDE0003: Remove qualification
 dotnet_diagnostic.IDE0003.severity = error
 
+# We cannot do this currently as overload resolution is not fully up to date with params span.
+# Should be able to change back to a warning once VS releases with .NET 9.
 # IDE0004: Remove unnecessary cast
-dotnet_diagnostic.IDE0004.severity = warning
+dotnet_diagnostic.IDE0004.severity = silent
 
 # IDE0017: Simplify object initialization
 dotnet_diagnostic.IDE0017.severity = warning
@@ -494,7 +496,7 @@ dotnet_diagnostic.CA1070.severity = error
 # CA2016: Forward the CancellationToken parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = warning
 
-# CA2020: Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr 
+# CA2020: Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
 dotnet_diagnostic.CA2020.severity = warning
 
 # .NET diagnostic
@@ -595,6 +597,12 @@ visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public
 
 dotnet_separate_import_directive_groups = false:warning
 
+# IDE0001: Simplify Names
+dotnet_diagnostic.IDE0001.severity = silent
+
+# IDE0002: Simplify Member Access
+dotnet_diagnostic.IDE0002.severity = silent
+
 # IDE0079: Remove unnecessary suppression
 dotnet_diagnostic.IDE0079.severity = none
 
@@ -640,7 +648,7 @@ end_of_line = crlf
 # Test specific
 [**/tests/**/*.cs]
 
-# CA1861: Avoid constant arrays as arguments - expected to be inline for test readability (4000 hits)
+# CA1861: Avoid constant arrays as arguments - expected to be in-line for test readability (4000 hits)
 dotnet_diagnostic.CA1861.severity = silent
 
 # This collides with TheoryData usage
@@ -650,7 +658,13 @@ dotnet_style_prefer_collection_expression = true:silent
 # xUnit1042: The member referenced by the MemberData attribute returns untyped data rows
 dotnet_diagnostic.xUnit1042.severity = none
 
-# CA1507: CA1507: Use nameof in place of string - many fasle positives
+# xUnit1044: Avoid using TheoryData type arguments that are not serializable
+dotnet_diagnostic.xUnit1044.severity = none
+
+# xUnit1045: Avoid using TheoryData type arguments that might not be serializable
+dotnet_diagnostic.xUnit1045.severity = none
+
+# CA1507: CA1507: Use nameof in place of string - many false positives
 dotnet_diagnostic.CA1507.severity = none
 
 # CA1822: Mark members as static
@@ -661,3 +675,15 @@ dotnet_diagnostic.CA1852.severity = suggestion
 
 # CA1859: Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1859.severity = none
+
+
+
+# Verify settings
+[*.{received,verified}.{txt,xml,json}]
+charset = "utf-8-bom"
+end_of_line = lf
+indent_size = unset
+indent_style = unset
+insert_final_newline = false
+tab_width = unset
+trim_trailing_whitespace = false

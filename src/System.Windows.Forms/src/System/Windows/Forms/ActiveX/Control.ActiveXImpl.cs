@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
+using System.Formats.Nrbf;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -12,12 +13,14 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Windows.Forms.BinaryFormat;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Ole;
 using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
+using System.Windows.Forms.Nrbf;
+using RECTL = Windows.Win32.Foundation.RECTL;
+using System.Windows.Forms.BinaryFormat;
 
 namespace System.Windows.Forms;
 
@@ -77,8 +80,7 @@ public partial class Control
     {
         get
         {
-            ActiveXImpl? activeXImpl = (ActiveXImpl?)Properties.GetObject(s_activeXImplProperty);
-            if (activeXImpl is null)
+            if (!Properties.TryGetValue(s_activeXImplProperty, out ActiveXImpl? activeXImpl))
             {
                 // Don't allow top level objects to be hosted as activeX controls.
                 if (GetState(States.TopLevel))
@@ -86,12 +88,10 @@ public partial class Control
                     throw new NotSupportedException(SR.AXTopLevelSource);
                 }
 
-                activeXImpl = new ActiveXImpl(this);
-
                 // PERF: IsActiveX is called quite a bit - checked everywhere from sizing to event raising. Using a
                 // state bit to track instead of fetching from the property store.
                 SetExtendedState(ExtendedStates.IsActiveX, true);
-                Properties.SetObject(s_activeXImplProperty, activeXImpl);
+                activeXImpl = Properties.AddValue(s_activeXImplProperty, new ActiveXImpl(this));
             }
 
             return activeXImpl;
@@ -152,7 +152,7 @@ public partial class Control
         {
             _control = control;
 
-            // We replace the control's window target with our own.  We
+            // We replace the control's window target with our own. We
             // do this so we can handle the UI Dead ambient property.
             _controlWindowTarget = control.WindowTarget;
             control.WindowTarget = this;
@@ -428,7 +428,7 @@ public partial class Control
             }
 
             // We can paint to an enhanced metafile, but not all GDI / GDI+ is
-            // supported on classic metafiles.  We throw VIEW_E_DRAW in the hope that
+            // supported on classic metafiles. We throw VIEW_E_DRAW in the hope that
             // the caller figures it out and sends us a different DC.
 
             OBJ_TYPE hdcType = (OBJ_TYPE)PInvokeCore.GetObjectType(hdcDraw);
@@ -467,7 +467,7 @@ public partial class Control
                 PInvoke.SetViewportExtEx(hdcDraw, p2.X, p2.Y, (SIZE*)&sViewportExt);
             }
 
-            // Now do the actual drawing.  We must ask all of our children to draw as well.
+            // Now do the actual drawing. We must ask all of our children to draw as well.
             try
             {
                 nint flags = PInvoke.PRF_CHILDREN | PInvoke.PRF_CLIENT | PInvoke.PRF_ERASEBKGND | PInvoke.PRF_NONCLIENT;
@@ -712,7 +712,7 @@ public partial class Control
 
         /// <summary>
         ///  Searches the control hierarchy of the given control and adds
-        ///  the mnemonics for each control to mnemonicList.  Each mnemonic
+        ///  the mnemonics for each control to mnemonicList. Each mnemonic
         ///  is added as a char to the list.
         /// </summary>
         private static void GetMnemonicList(Control control, List<char> mnemonicList)
@@ -770,7 +770,7 @@ public partial class Control
         }
 
         /// <summary>
-        ///  Converts coordinates in HiMetric to pixels.  Used for ActiveX sourcing.
+        ///  Converts coordinates in HiMetric to pixels. Used for ActiveX sourcing.
         /// </summary>
         private static Point HiMetricToPixel(int x, int y)
         {
@@ -977,7 +977,7 @@ public partial class Control
         internal HRESULT IsDirty() => _activeXState[s_isDirty] ? HRESULT.S_OK : HRESULT.S_FALSE;
 
         /// <summary>
-        ///  Looks at the property to see if it should be loaded / saved as a resource or  through a type converter.
+        ///  Looks at the property to see if it should be loaded / saved as a resource or through a type converter.
         /// </summary>
         private bool IsResourceProperty(PropertyDescriptor property)
         {
@@ -1138,8 +1138,8 @@ public partial class Control
                     object? deserialized = null;
                     try
                     {
-                        BinaryFormattedObject format = new(stream);
-                        success = format.TryGetObject(out deserialized);
+                        SerializationRecord rootRecord = stream.Decode();
+                        success = rootRecord.TryGetResXObject(out deserialized);
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -1148,13 +1148,13 @@ public partial class Control
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
                     if (!success)
                     {
-                        if (!DataObject.ComposedDataObject.EnableUnsafeBinaryFormatterInNativeObjectSerialization)
+                        if (!DataObject.Composition.EnableUnsafeBinaryFormatterInNativeObjectSerialization)
                         {
                             throw new NotSupportedException(SR.BinaryFormatterNotSupported);
                         }
 
                         stream.Position = 0;
-                        deserialized = new BinaryFormatter().Deserialize(stream);
+                        deserialized = new BinaryFormatter().Deserialize(stream); // CodeQL[SM03722, SM04191] : BinaryFormatter is intended to be used as a fallback for unsupported types. Users must explicitly opt into this behavior
                     }
 #pragma warning restore
 
@@ -1162,7 +1162,7 @@ public partial class Control
                     return true;
                 }
 
-                // Not a resource property.  Use TypeConverters to convert the string back to the data type.  We do
+                // Not a resource property. Use TypeConverters to convert the string back to the data type. We do
                 // not check for CanConvertFrom here -- we the conversion fails the type converter will throw,
                 // and we will log it into the COM error log.
                 TypeConverter converter = currentProperty.Converter;
@@ -1170,9 +1170,9 @@ public partial class Control
                     converter is not null,
                     $"No type converter for property '{currentProperty.Name}' on class {_control.GetType().FullName}");
 
-                // Check to see if the type converter can convert from a string.  If it can,.
-                // use that as it is the best format for IPropertyBag.  Otherwise, check to see
-                // if it can convert from a byte array.  If it can, get the string, decode it
+                // Check to see if the type converter can convert from a string. If it can,.
+                // use that as it is the best format for IPropertyBag. Otherwise, check to see
+                // if it can convert from a byte array. If it can, get the string, decode it
                 // to a byte array, and then set the value.
                 object? newValue = null;
 
@@ -1514,7 +1514,7 @@ public partial class Control
 
                 if (IsResourceProperty(currentProperty))
                 {
-                    // Resource property.  Save this to the bag as a 64bit encoded string.
+                    // Resource property. Save this to the bag as a 64bit encoded string.
                     using MemoryStream stream = new();
                     object sourceValue = currentProperty.GetValue(_control)!;
                     bool success = false;
@@ -1532,7 +1532,7 @@ public partial class Control
                     {
                         stream.SetLength(0);
 
-                        if (!DataObject.ComposedDataObject.EnableUnsafeBinaryFormatterInNativeObjectSerialization)
+                        if (!DataObject.Composition.EnableUnsafeBinaryFormatterInNativeObjectSerialization)
                         {
                             throw new NotSupportedException(SR.BinaryFormatterNotSupported);
                         }
@@ -1548,7 +1548,7 @@ public partial class Control
                     continue;
                 }
 
-                // Not a resource property.  Persist this using standard type converters.
+                // Not a resource property. Persist this using standard type converters.
                 TypeConverter converter = currentProperty.Converter;
                 Debug.Assert(
                     converter is not null,
@@ -1763,11 +1763,11 @@ public partial class Control
 
             // ActiveX expects to be notified when a control's bounds change, and also
             // intends to notify us through SetObjectRects when we report that the
-            // bounds are about to change.  We implement this all on a control's Bounds
-            // property, which doesn't use this callback mechanism.  The adjustRect
+            // bounds are about to change. We implement this all on a control's Bounds
+            // property, which doesn't use this callback mechanism. The adjustRect
             // member handles this. If it is non-null, then we are being called in
-            // response to an OnPosRectChange call.  In this case we do not
-            // set the control bounds but set the bounds on the adjustRect.  When
+            // response to an OnPosRectChange call. In this case we do not
+            // set the control bounds but set the bounds on the adjustRect. When
             // this returns from the container and comes back to our OnPosRectChange
             // implementation, these new bounds will be handed back to the control
             // for the actual window change.
@@ -1819,12 +1819,12 @@ public partial class Control
                 }
             }
 
-            // If our region has changed, set the new value.  We only do this if
+            // If our region has changed, set the new value. We only do this if
             // the handle has been created, since otherwise the control will
             // merge our region automatically.
             if (setRegion)
             {
-                _control.SetRegion(_control.Region);
+                _control.SetRegionInternal(_control.Region);
             }
 
             // Forms^3 uses transparent overlay windows that appear to cause painting artifacts.

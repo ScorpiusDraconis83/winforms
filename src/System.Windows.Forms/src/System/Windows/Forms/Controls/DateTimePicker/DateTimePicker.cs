@@ -488,7 +488,13 @@ public partial class DateTimePicker : Control
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override Color ForeColor
     {
-        get => ShouldSerializeForeColor() ? base.ForeColor : SystemColors.WindowText;
+#pragma warning disable WFO5001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        get => ShouldSerializeForeColor()
+            || Application.IsDarkModeEnabled
+                ? base.ForeColor
+                : SystemColors.WindowText;
+#pragma warning restore WFO5001
+
         set => base.ForeColor = value;
     }
 
@@ -559,9 +565,9 @@ public partial class DateTimePicker : Control
         return minDate;
     }
 
-    // Similarly, make sure the maxDate respects the current culture.  No
+    // Similarly, make sure the maxDate respects the current culture. No
     // problems are anticipated here: I don't believe there are calendars
-    // around that have max dates on them.  But if there are, we'll deal with
+    // around that have max dates on them. But if there are, we'll deal with
     // them correctly.
     internal static DateTime EffectiveMaxDate(DateTime maxDate)
     {
@@ -670,7 +676,7 @@ public partial class DateTimePicker : Control
     }
 
     // We restrict the available dates to >= 1753 because of oddness in the Gregorian calendar about
-    // that time.  We do this even for cultures that don't use the Gregorian calendar -- we're not
+    // that time. We do this even for cultures that don't use the Gregorian calendar -- we're not
     // really that worried about calendars for >250 years ago.
 
     /// <summary>
@@ -806,8 +812,8 @@ public partial class DateTimePicker : Control
     internal override bool SupportsUiaProviders => true;
 
     /// <summary>
-    ///  Overrides Text to allow for setting of the value via a string.  Also, returns
-    ///  a formatted Value when getting the text.  The DateTime class will throw
+    ///  Overrides Text to allow for setting of the value via a string. Also, returns
+    ///  a formatted Value when getting the text. The DateTime class will throw
     ///  an exception if the string (value) being passed in is invalid.
     /// </summary>
     [Browsable(false)]
@@ -1097,7 +1103,7 @@ public partial class DateTimePicker : Control
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        SystemEvents.UserPreferenceChanged += new UserPreferenceChangedEventHandler(MarshaledUserPreferenceChanged);
+        SystemEvents.UserPreferenceChanged += MarshaledUserPreferenceChanged;
     }
 
     /// <summary>
@@ -1105,7 +1111,7 @@ public partial class DateTimePicker : Control
     /// </summary>
     protected override void OnHandleDestroyed(EventArgs e)
     {
-        SystemEvents.UserPreferenceChanged -= new UserPreferenceChangedEventHandler(MarshaledUserPreferenceChanged);
+        SystemEvents.UserPreferenceChanged -= MarshaledUserPreferenceChanged;
         base.OnHandleDestroyed(e);
     }
 
@@ -1119,10 +1125,10 @@ public partial class DateTimePicker : Control
             // border should be drawn disabled when theming (VisualStyles) is enabled. Setting the window
             // style to itself (which will have the proper WS_DISABLED setting after calling base) will
             // flush the cached value and render the border as one would expect.
-            PInvoke.SetWindowLong(
+            PInvokeCore.SetWindowLong(
                 this,
                 WINDOW_LONG_PTR_INDEX.GWL_STYLE,
-                PInvoke.GetWindowLong(this, WINDOW_LONG_PTR_INDEX.GWL_STYLE));
+                PInvokeCore.GetWindowLong(this, WINDOW_LONG_PTR_INDEX.GWL_STYLE));
         }
     }
 
@@ -1499,10 +1505,10 @@ public partial class DateTimePicker : Control
             HWND handle = (HWND)PInvoke.SendMessage(this, PInvoke.DTM_GETMONTHCAL);
             if (handle != IntPtr.Zero)
             {
-                WINDOW_EX_STYLE style = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+                WINDOW_EX_STYLE style = (WINDOW_EX_STYLE)PInvokeCore.GetWindowLong(handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
                 style |= WINDOW_EX_STYLE.WS_EX_LAYOUTRTL | WINDOW_EX_STYLE.WS_EX_NOINHERITLAYOUT;
                 style &= ~(WINDOW_EX_STYLE.WS_EX_RIGHT | WINDOW_EX_STYLE.WS_EX_RTLREADING);
-                PInvoke.SetWindowLong(handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (nint)style);
+                PInvokeCore.SetWindowLong(handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (nint)style);
                 GC.KeepAlive(this);
             }
         }

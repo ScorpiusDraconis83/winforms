@@ -216,7 +216,7 @@ public abstract partial class FileDialog : CommonDialog
 
     /// <summary>
     ///  Extracts the file extensions specified by the current file filter into an
-    ///  array of strings.  None of the extensions contain .'s, and the  default
+    ///  array of strings. None of the extensions contain .'s, and the  default
     ///  extension is first.
     /// </summary>
     private string[] FilterExtensions
@@ -546,14 +546,14 @@ public abstract partial class FileDialog : CommonDialog
                         {
                             // This is the second CDN_FILEOK, so we want to ignore it.
                             _ignoreSecondFileOkNotification = false;
-                            PInvoke.SetWindowLong((HWND)hWnd, 0, -1);
+                            PInvokeCore.SetWindowLong((HWND)hWnd, 0, -1);
                             return -1;
                         }
                     }
 
                     if (!DoFileOk(notify->lpOFN))
                     {
-                        PInvoke.SetWindowLong((HWND)hWnd, 0, -1);
+                        PInvokeCore.SetWindowLong((HWND)hWnd, 0, -1);
                         return -1;
                     }
 

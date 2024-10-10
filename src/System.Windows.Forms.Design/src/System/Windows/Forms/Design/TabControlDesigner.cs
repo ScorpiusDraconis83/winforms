@@ -102,13 +102,13 @@ internal class TabControlDesigner : ParentControlDesigner
 
         TabControl tc = (TabControl)Component;
         if (tc is not null)
-        { // always Select the First Tab on Initialising the component...
+        { // always Select the First Tab on Initializing the component...
             tc.SelectedIndex = 0;
         }
     }
 
-    // If the tabcontrol already contains the control we are dropping then don't allow the drop.
-    // I.e. we don't want to allow local drag-drop for tabcontrols.
+    // If the TabControl already contains the control we are dropping then don't allow the drop.
+    // I.e. we don't want to allow local drag-drop for TabControls.
     public override bool CanParent(Control control) => (control is TabPage && !Control.Contains(control));
 
     private void CheckVerbStatus()
@@ -146,21 +146,21 @@ internal class TabControlDesigner : ParentControlDesigner
             ISelectionService svc = (ISelectionService)GetService(typeof(ISelectionService));
             if (svc is not null)
             {
-                svc.SelectionChanged -= new EventHandler(OnSelectionChanged);
+                svc.SelectionChanged -= OnSelectionChanged;
             }
 
             IComponentChangeService cs = (IComponentChangeService)GetService(typeof(IComponentChangeService));
             if (cs is not null)
             {
-                cs.ComponentChanged -= new ComponentChangedEventHandler(OnComponentChanged);
+                cs.ComponentChanged -= OnComponentChanged;
             }
 
             if (HasComponent && Control is TabControl tabControl)
             {
-                tabControl.SelectedIndexChanged -= new EventHandler(OnTabSelectedIndexChanged);
-                tabControl.GotFocus -= new EventHandler(OnGotFocus);
-                tabControl.RightToLeftLayoutChanged -= new EventHandler(OnRightToLeftLayoutChanged);
-                tabControl.ControlAdded -= new ControlEventHandler(OnControlAdded);
+                tabControl.SelectedIndexChanged -= OnTabSelectedIndexChanged;
+                tabControl.GotFocus -= OnGotFocus;
+                tabControl.RightToLeftLayoutChanged -= OnRightToLeftLayoutChanged;
+                tabControl.ControlAdded -= OnControlAdded;
             }
         }
 
@@ -173,7 +173,7 @@ internal class TabControlDesigner : ParentControlDesigner
 
         // tabControlSelected tells us if a tab page or the tab control itself is selected.
         // If the tab control is selected, then we need to return true from here - so we can switch back and forth
-        // between tabs.  If we're not currently selected, we want to select the tab control
+        // between tabs. If we're not currently selected, we want to select the tab control
         // so return false.
         if (_tabControlSelected)
         {
@@ -217,21 +217,21 @@ internal class TabControlDesigner : ParentControlDesigner
         ISelectionService svc = (ISelectionService)GetService(typeof(ISelectionService));
         if (svc is not null)
         {
-            svc.SelectionChanged += new EventHandler(OnSelectionChanged);
+            svc.SelectionChanged += OnSelectionChanged;
         }
 
         IComponentChangeService cs = (IComponentChangeService)GetService(typeof(IComponentChangeService));
         if (cs is not null)
         {
-            cs.ComponentChanged += new ComponentChangedEventHandler(OnComponentChanged);
+            cs.ComponentChanged += OnComponentChanged;
         }
 
         if (control is not null)
         {
-            control.SelectedIndexChanged += new EventHandler(OnTabSelectedIndexChanged);
-            control.GotFocus += new EventHandler(OnGotFocus);
-            control.RightToLeftLayoutChanged += new EventHandler(OnRightToLeftLayoutChanged);
-            control.ControlAdded += new ControlEventHandler(OnControlAdded);
+            control.SelectedIndexChanged += OnTabSelectedIndexChanged;
+            control.GotFocus += OnGotFocus;
+            control.RightToLeftLayoutChanged += OnRightToLeftLayoutChanged;
+            control.ControlAdded += OnControlAdded;
         }
     }
 
@@ -517,7 +517,7 @@ internal class TabControlDesigner : ParentControlDesigner
         }
         else
         {
-            // We must be dragging something off the toolbox, so forward the drag to the right tabpage.
+            // We must be dragging something off the toolbox, so forward the drag to the right TabPage.
             _forwardOnDrag = true;
         }
 
@@ -632,7 +632,7 @@ internal class TabControlDesigner : ParentControlDesigner
             case PInvoke.WM_HSCROLL:
             case PInvoke.WM_VSCROLL:
                 // We do this so that we can update the areas covered by glyphs correctly. VSWhidbey# 187405.
-                // We just invalidate the area corresponding to the ClientRectangle in the adornerwindow.
+                // We just invalidate the area corresponding to the ClientRectangle in the AdornerWindow.
                 BehaviorService.Invalidate(BehaviorService.ControlRectInAdornerWindow(Control));
                 base.WndProc(ref m);
                 break;

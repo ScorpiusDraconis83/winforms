@@ -338,7 +338,7 @@ internal sealed partial class PropertyGridView :
     internal bool DrawValuesRightToLeft
         => _editTextBox is not null
             && _editTextBox.IsHandleCreated
-            && ((WINDOW_EX_STYLE)PInvoke.GetWindowLong(_editTextBox, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE)).HasFlag(WINDOW_EX_STYLE.WS_EX_RTLREADING);
+            && ((WINDOW_EX_STYLE)PInvokeCore.GetWindowLong(_editTextBox, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE)).HasFlag(WINDOW_EX_STYLE.WS_EX_RTLREADING);
 
     internal DropDownHolder? DropDownControlHolder => _dropDownHolder;
 
@@ -442,7 +442,7 @@ internal sealed partial class PropertyGridView :
     }
 
     /// <summary>
-    ///  Returns a default location for showing the context menu.  This
+    ///  Returns a default location for showing the context menu. This
     ///  location is the center of the active property label in the grid, and
     ///  is used to position the context menu when the menu is invoked
     ///  via the keyboard.
@@ -1450,7 +1450,7 @@ internal sealed partial class PropertyGridView :
         // It is unknown why this control was created as a top-level control. Windows does not recommend this way of setting parent.
         // We are not touching this for this release. We may revisit it in next release.
 
-        PInvoke.SetWindowLong(_dropDownHolder, WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, this);
+        PInvokeCore.SetWindowLong(_dropDownHolder, WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, this);
         _dropDownHolder.SetBounds(location.X, location.Y, size.Width, size.Height);
         PInvoke.ShowWindow(_dropDownHolder, SHOW_WINDOW_CMD.SW_SHOWNA);
         EditTextBox.Filter = true;
@@ -1515,7 +1515,7 @@ internal sealed partial class PropertyGridView :
             int index = GetCurrentValueIndex(gridEntry);
 
             object[] values = gridEntry.GetPropertyValueList();
-            string letter = new(new char[] { keyChar });
+            string letter = new([keyChar]);
             for (int i = 0; i < values.Length; i++)
             {
                 object currentValue = values[(i + index + 1) % values.Length];
@@ -3688,7 +3688,7 @@ internal sealed partial class PropertyGridView :
             object[] rgItems = gridEntry.GetPropertyValueList();
             int maxWidth = 0;
 
-            // The listbox draws with GDI, not GDI+.  So we use a normal DC here.
+            // The listbox draws with GDI, not GDI+. So we use a normal DC here.
 
             using GetDcScope hdc = new(DropDownListBox.HWND);
 
@@ -4653,7 +4653,7 @@ internal sealed partial class PropertyGridView :
                 InPropertySet = true;
 
                 // If this propentry is enumerable, then once a value is selected from the editor,
-                // we'll want to close the drop down (like true/false).  Otherwise, if we're
+                // we'll want to close the drop down (like true/false). Otherwise, if we're
                 // working with Anchor for ex., then we should be able to select different values
                 // from the editor, without having it close every time.
                 if (entry is not null && entry.Enumerable && closeDropDown)

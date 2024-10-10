@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace System.Windows.Forms.UITests;
 
 // NOTE: This class contains many tests which don't require user input. Although they arguably belong to the unit
-// tests project, these tests assert behaviours of ListView.View=View.Tile, which doesn't work correctly unless
+// tests project, these tests assert behaviors of ListView.View=View.Tile, which doesn't work correctly unless
 // we ran an app.
 
 public class ListViewTests : ControlTestBase
@@ -518,9 +518,9 @@ public class ListViewTests : ControlTestBase
         ColumnHeader columnHeader2 = new() { Text = "ColumnHeader2", Width = 140 };
         ColumnHeader columnHeader3 = new() { Text = "ColumnHeader3", Width = 140 };
         listView.Columns.AddRange([columnHeader1, columnHeader2, columnHeader3]);
-        ListViewItem listViewItem1 = new(new[] { "row1", "row1Col2", "row1Col3" }, -1) { StateImageIndex = 0 };
-        ListViewItem listViewItem2 = new(new[] { "row2", "row2Col2", "row2Col3" }, -1) { StateImageIndex = 0 };
-        ListViewItem listViewItem3 = new(new[] { "row3", "row3Col2", "row3Col3" }, -1) { StateImageIndex = 0 };
+        ListViewItem listViewItem1 = new(["row1", "row1Col2", "row1Col3"], -1) { StateImageIndex = 0 };
+        ListViewItem listViewItem2 = new(["row2", "row2Col2", "row2Col3"], -1) { StateImageIndex = 0 };
+        ListViewItem listViewItem3 = new(["row3", "row3Col2", "row3Col3"], -1) { StateImageIndex = 0 };
         listView.RetrieveVirtualItem += (s, e) =>
         {
             e.Item = e.ItemIndex switch
